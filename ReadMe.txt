@@ -1,11 +1,8 @@
-# DVScalibration
-Matlab functions to help with DVS calibration using the Caltech Camera Calibration Toolbox http://www.vision.caltech.edu/bouguetj/calib_doc/
-
 Camera calibration for DVS cameras
 http://www.garrickorchard.com/code
 
 This code relies heavily on the Caltech Camera Calibration Toolbox, available from 
-http://www.vision.caltech.edu/bouguetj/calib_doc/
+www.vision.caltech.edu/bouguetj/calib_doc/
 Since the toolbox was not created by us, we refer users to the original site above for download. However, should the toolbox no longer be available, contact Garrick Orchard for a copy.
 
 
