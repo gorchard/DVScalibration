@@ -13,12 +13,12 @@ rectangleSize_mm = PresentStimulus([10,10], 10);
 % the Matlab Path. These functions can be obtained from
 % http://www.garrickorchard.com/code/matlab-AER-functions 
  
-filename = '0002.val'; %an example of a filename
+filename = '0001.val'; %an example of a filename
 [TD, EM] = ReadAER(filename);
 %%if using EM events:
-% image = MakeImage(EM, [304,240], 1);
+calibration_image = MakeImage(EM, [304,240], 1);
 %%if using TD events:
-calibration_image = MakeImage(TD, [304,240], 0);
+% calibration_image = MakeImage(TD, [304,240], 0);
 
 imshow(calibration_image); % optionally show the image
 
@@ -47,6 +47,6 @@ imwrite(calibration_image,[calibration_images_directory, '\img', num2str(image_n
 % http://www.vision.caltech.edu/bouguetj/calib_doc/
 
 caltech_calibration_toolbox_path = 'TOOLBOX_calib'; % the path to the toolbox
-addpath(genpath(caltech_calibration_toolbox_path)) %add the toolbox to your path
+addpath(genpath([pwd, '\', caltech_calibration_toolbox_path])) %add the toolbox to your path
 cd(calibration_images_directory) %change to the directory containing the calibration images
 calib_gui %run the calibration toolbox
