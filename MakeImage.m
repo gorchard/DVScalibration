@@ -46,6 +46,10 @@ function image = MakeImage(events, image_size, EM_notTD)
 
 image = zeros(image_size);
 
+if isempty(events.y)
+    error('The input struct of events is empty');
+end
+
 if (min(events.y) < 1) ||(min(events.x) < 1)
     error('event x and y addresses (events.x and events.y) must be integers strictly greater than 0');
 end
