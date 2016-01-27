@@ -1,11 +1,12 @@
-function rectangleSize_mm = PresentStimulus(num_rectangles, num_flashes)
-% blocksize_mm = PresentStimulus(num_rectangles, num_flashes)
+function [dX, dY] = PresentStimulus(num_rectangles, num_flashes)
+% [dX, dY] = PresentStimulus(num_rectangles, num_flashes)
 % Creates and presents a checkerboard calibration pattern on the screen.
 %
 % TAKES IN:
 % 'num_rectangles' = [num_rectanglesX; num_rectanglesY]
 % A 2x1 vector containing the number of rectangles to display
-% in the horizontal and vertical directions respectively
+% in the horizontal and vertical directions respectively. If only a scalar
+% is passed, the same number of rectangles will be shown in each direction.
 %
 % 'num_flashes'
 % Dictates how many times the stimulus will be flashed on the
@@ -16,24 +17,34 @@ function rectangleSize_mm = PresentStimulus(num_rectangles, num_flashes)
 %
 %
 % RETURNS:
-% 'rectangleSize_mm' = [size_x, size_y]
-% The horizontal (size_x) and vertical (size_y) size of the rectangles displayed
-% on the screen, in units of millimeters. This paramter is required for
+% [dX, dY]
+% The horizontal (dX) and vertical (dY) size of the rectangles displayed
+% on the screen, in units of millimeters. This parameter is required for
 % calibration using the Caltech Camera Calibration Toolbox available from:
 % http://www.vision.caltech.edu/bouguetj/calib_doc/index.html
+% (to make sure the X and Y directions used by the calibration toolbox are
+% the same as used by this function, always start from the lower left
+% corner when outlining the grid pattern during calibration).
 %
 %
 % EXAMPLE USE:
-% rectangleSize_mm = PresentStimulus([10,10], 0); %display static image
-% rectangleSize_mm = PresentStimulus([10,10], 10); %flash ten times
+% [dY, dX] = PresentStimulus([10,10], 0); %display static image
+% [dY, dX] = PresentStimulus(10, 0); %display static image, identical to above command
+% [dY, dX] = PresentStimulus([10,10], 10); %flash ten times
 %
 % written by Garrick Orchard - June 2015
 % garrickorchard@gmail.com
 
 close all;
 figure(1)
+%% check inputs
+%if only one value was passed for num_rectangles, show the same number in
+%each dimension
+if length(num_rectangles)<2
+    num_rectangles = [num_rectangles,num_rectangles];
+end
 
-%% check if the 'num_flashes' variable was passed
+% check if the 'num_flashes' variable was passed
 if ~exist('num_flashes', 'var')
     num_flashes = 0;
 end
@@ -57,7 +68,7 @@ image_inner_dim = num_rectangles.*rectangleSize_pixels; % the dimenstion of the 
 %Create a black image to fit both the checkerboard and the image border
 imgTemplate = zeros(image_inner_dim+2*image_borderSize);
 
-%% create the checkerboar image
+%% create the checkerboard image
 img = imgTemplate;
 for x = 1:num_rectangles(1)
     for y = (1+rem(x+1,2)):2:num_rectangles(2)
@@ -69,6 +80,13 @@ end
 
 %% display
 imshow(img');
+
+warning('Do not resize the checkerboard image window! It has been shown on the screen at a known size which must be known for calibration')
+disp('Checkerboard rectangle size is:')
+disp(['Vertical: ', num2str(rectangleSize_mm(2)), 'mm'])
+disp(['Horizontal: ', num2str(rectangleSize_mm(1)), 'mm'])
+
+warning('The calibration toolbox X and Y axes depend on which corner of the checkerboard is clicked first when extracting corners. To match convention of this function, always start at the bottom left corner when extracting corners during calibration.')
 
 if num_flashes>1
     input('Press any button to begin flashing...\n');
@@ -83,3 +101,6 @@ if num_flashes>1
         drawnow;
     end
 end
+
+dX = rectangleSize_mm(1);
+dY = rectangleSize_mm(2);
