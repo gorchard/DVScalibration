@@ -1,3 +1,7 @@
 # ignore autosave files from Matlab
 *.asv
 *.mat
+#don't sync the toolbox, calibration images, or raw recordings
+TOOLBOX_calib/
+raw_recordings/
+CalibrationImages/

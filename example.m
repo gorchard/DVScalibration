@@ -7,20 +7,36 @@
 
 % Read the recordings from ATIS ".val" file and convert to an image using 
 % the 'MakeImage' function. 
+rawdata_folder = 'raw_recordings';
+if ~exist(rawdata_folder, 'dir')
+    mkdir(rawdata_folder);
+end
+
+disp('Take recordings of about 10 images and copy the ".val" files to the folder:')
+disp([pwd, '\', rawdata_folder])
+input('(press key when done)')
 
 %% For ATIS
 % This script requires some ATIS functions to be on 
 % the Matlab Path. These functions can be obtained from
 % http://www.garrickorchard.com/code/matlab-AER-functions 
- 
-filename = '0001.val'; %an example of a filename
-[TD, EM] = ReadAER(filename);
-%%if using EM events:
-calibration_image = MakeImage(EM, [304,240], 1);
-%%if using TD events:
-% calibration_image = MakeImage(TD, [304,240], 0);
+calibration_images_directory = 'CalibrationImages'; %name a directory to store the calibration images in
+if ~exist(calibration_images_directory, 'dir')
+    mkdir(calibration_images_directory) %if the directory doesn't already exist, create it
+end
 
-imshow(calibration_image); % optionally show the image
+image_number = 0;
+while exist([rawdata_folder, '\', num2str(image_number, '%04.f'), '.val'], 'file')
+    filename = [rawdata_folder, '\', num2str(image_number, '%04.f'), '.val']; %an example of a filename
+    [TD, EM] = ReadAER(filename);
+    %%if using EM events:
+    calibration_image = MakeImage(EM, [304,240], 1);
+    %%if using TD events:
+    % calibration_image = MakeImage(TD, [304,240], 0);
+    imshow(calibration_image); % optionally show the image
+    imwrite(calibration_image,[calibration_images_directory, '\', num2str(image_number), '.bmp'], 'bmp')
+    image_number = image_number+1;
+end
 
 %% For DVS
 % % This script requires some DVS functions to be on 
@@ -34,13 +50,6 @@ imshow(calibration_image); % optionally show the image
 % 
 % image = MakeImage(TD, [128,128], 0);
 
-%% save to a file
-image_number = 0; %which of the images is this (multiple images are required for calibration)
-calibration_images_directory = 'CalibrationImages'; %name a directory to store the calibration images in
-if ~exist(calibration_images_directory, 'dir')
-    mkdir(calibration_images_directory) %if the directory doesn't already exist, create it
-end
-imwrite(calibration_image,[calibration_images_directory, '\img', num2str(image_number), '.bmp'], 'bmp')
 
 %% now run the Caltech Camera Calibration toolbox and use the generated
 % images for calibration. The toolbox is available from:
