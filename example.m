@@ -1,7 +1,7 @@
 % Create the calibration images, more the better
 % Use the 'PresentStimulus' function to bring up a calibration pattern on
 % the screen with known size. 
-[dX, dY] = PresentStimulus([10,10], 0);
+[dX, dY] = PresentStimulus(10, 0);
 % and make a recording of the stimulus using ATIS
 % (press any key in Matlab to make the stimulus start flashing)
 

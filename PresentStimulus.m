@@ -1,34 +1,30 @@
-function [dX, dY] = PresentStimulus(num_rectangles, num_flashes)
-% [dX, dY] = PresentStimulus(num_rectangles, num_flashes)
+function [dX, dY] = PresentStimulus(num_squares, num_flashes)
+% [dX, dY] = PresentStimulus(num_squares, num_flashes)
 % Creates and presents a checkerboard calibration pattern on the screen.
 %
 % TAKES IN:
-% 'num_rectangles' = [num_rectanglesX; num_rectanglesY]
-% A 2x1 vector containing the number of rectangles to display
-% in the horizontal and vertical directions respectively. If only a scalar
-% is passed, the same number of rectangles will be shown in each direction.
+%   'num_squares'
+%       A scalar indicating the number of squares to show in each
+%       direction. Defaults to 10 if no parameters are passed.
 %
-% 'num_flashes'
-% Dictates how many times the stimulus will be flashed on the
-% screen. A negative or zero value creates a static stimulus (if non-DVS
-% calibration is to be used). If this paramter is omitted,
-% 'num_flashes = 0' is assumed (useful for ATIS or DAVIS calibration using
-% snapshot/APS functionality instead of DVS).
+%   'num_flashes'
+%       Dictates how many times the stimulus will be flashed on the screen.
+%       A negative or zero value creates a static stimulus (if non-DVS
+%       calibration is to be used). If this paramter is omitted,
+%       'num_flashes = 0' is assumed (useful for ATIS or DAVIS calibration
+%       using snapshot/APS functionality instead of DVS). 
 %
 %
 % RETURNS:
 % [dX, dY]
-% The horizontal (dX) and vertical (dY) size of the rectangles displayed
-% on the screen, in units of millimeters. This parameter is required for
-% calibration using the Caltech Camera Calibration Toolbox available from:
-% http://www.vision.caltech.edu/bouguetj/calib_doc/index.html
-% (to make sure the X and Y directions used by the calibration toolbox are
-% the same as used by this function, always start from the lower left
-% corner when outlining the grid pattern during calibration).
-%
+%       The horizontal (dX) and vertical (dY) size of the rectangles
+%       displayed on the screen, in units of millimeters. This parameter is
+%       required for calibration using the Caltech Camera Calibration
+%       Toolbox available from:
+%       http://www.vision.caltech.edu/bouguetj/calib_doc/index.html 
 %
 % EXAMPLE USE:
-% [dY, dX] = PresentStimulus([10,10], 0); %display static image
+% PresentStimulus();
 % [dY, dX] = PresentStimulus(10, 0); %display static image, identical to above command
 % [dY, dX] = PresentStimulus([10,10], 10); %flash ten times
 %
@@ -38,10 +34,14 @@ function [dX, dY] = PresentStimulus(num_rectangles, num_flashes)
 close all;
 figure(1)
 %% check inputs
-%if only one value was passed for num_rectangles, show the same number in
+%if only one value was passed for num_squares, show the same number in
 %each dimension
-if length(num_rectangles)<2
-    num_rectangles = [num_rectangles,num_rectangles];
+if ~exist('num_squares', 'var')
+    num_squares = [10,10];
+end
+
+if length(num_squares)<2
+    num_squares = [num_squares,num_squares];
 end
 
 % check if the 'num_flashes' variable was passed
@@ -53,40 +53,45 @@ end
 [Screen_size_pixels, Screen_size_mm] = getScreenMeasurements();
 
 %fixed parameters of the setup
-figure_borderSize = 150; %leave space of 150 pixels on each side of the axes for the figure controls etc
-image_borderSize = 10; %within the image, create a border of size 10 pixels to ensure contrast with the outside rectangles
+figure_borderSize = 100; %leave space of 100 pixels on each side of the axes for the figure controls etc
+% image_borderSize = 10; %within the image, create a border of size 10 pixels to ensure contrast with the outside rectangles
 
 %How big is each rectangle in units of pixels?
-rectangleSize_pixels = floor((Screen_size_pixels - 2*(figure_borderSize+image_borderSize))./num_rectangles);
+squareSize_pixels = min(floor((Screen_size_pixels - 2*figure_borderSize)./(num_squares+2)));
+squareSize_pixels = [squareSize_pixels, squareSize_pixels];
+image_borderSize = squareSize_pixels(1);
 
 %How big is each rectangle in units of millimeters?
-rectangleSize_mm = Screen_size_mm.*rectangleSize_pixels./Screen_size_pixels;
+squareSize_mm = Screen_size_mm.*squareSize_pixels./Screen_size_pixels;
 
 %How big is the checkered part of the image
-image_inner_dim = num_rectangles.*rectangleSize_pixels; % the dimenstion of the inside of the image (not including the border)
+image_inner_dim = num_squares.*squareSize_pixels; % the dimenstion of the inside of the image (not including the border)
 
 %Create a black image to fit both the checkerboard and the image border
-imgTemplate = zeros(image_inner_dim+2*image_borderSize);
+imgTemplate = 0.5*ones(image_inner_dim+2*image_borderSize);
 
 %% create the checkerboard image
 img = imgTemplate;
-for x = 1:num_rectangles(1)
-    for y = (1+rem(x+1,2)):2:num_rectangles(2)
-        xloc = image_borderSize + ((1+(x-1)*rectangleSize_pixels(1)):(x*rectangleSize_pixels(1)));
-        yloc = image_borderSize + ((1+(y-1)*rectangleSize_pixels(2)):(y*rectangleSize_pixels(2)));
+for x = 1:num_squares(1)
+    for y = (1+rem(x+1,2)):2:num_squares(2)
+        xloc = image_borderSize + ((1+(x-1)*squareSize_pixels(1)):(x*squareSize_pixels(1)));
+        yloc = image_borderSize + ((1+(y-1)*squareSize_pixels(2)):(y*squareSize_pixels(2)));
         img(xloc,yloc) = 1;
+    end
+    for y = (1+rem(x,2)):2:num_squares(2)
+        xloc = image_borderSize + ((1+(x-1)*squareSize_pixels(1)):(x*squareSize_pixels(1)));
+        yloc = image_borderSize + ((1+(y-1)*squareSize_pixels(2)):(y*squareSize_pixels(2)));
+        img(xloc,yloc) = 0;
     end
 end
 
 %% display
 imshow(img');
 
-warning('Do not resize the checkerboard image window! It has been shown on the screen at a known size which must be known for calibration')
+warning('Do not resize the checkerboard image window! It has been shown on the screen at a specific size which must be known for calibration')
 disp('Checkerboard rectangle size is:')
-disp(['Vertical: ', num2str(rectangleSize_mm(2)), 'mm'])
-disp(['Horizontal: ', num2str(rectangleSize_mm(1)), 'mm'])
-
-warning('The calibration toolbox X and Y axes depend on which corner of the checkerboard is clicked first when extracting corners. To match convention of this function, always start at the bottom left corner when extracting corners during calibration.')
+disp(['Vertical: ', num2str(squareSize_mm(2)), 'mm'])
+disp(['Horizontal: ', num2str(squareSize_mm(1)), 'mm'])
 
 if num_flashes>1
     input('Press any button to begin flashing...\n');
@@ -102,5 +107,5 @@ if num_flashes>1
     end
 end
 
-dX = rectangleSize_mm(1);
-dY = rectangleSize_mm(2);
+dX = squareSize_mm(1);
+dY = squareSize_mm(2);
